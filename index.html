@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>MVP Scope Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #F7F7F9; --white: #FFFFFF; --border: #E8E8ED;
+  --text: #0A0A0F; --text2: #6B6B7B; --text3: #AEAEB8;
+  --accent: #5B4CF5; --accent2: #7C6FF7; --accent-light: #EFEDFF;
+  --green: #00C896; --green-light: #E6FBF5;
+  --orange: #FF8C42; --orange-light: #FFF3EB;
+  --red: #FF4757; --red-light: #FFF0F1;
+  --yellow: #FFD166; --yellow-light: #FFFAED;
+}
+html, body { min-height: 100%; background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); -webkit-font-smoothing: antialiased; }
+.container { max-width: 560px; margin: 0 auto; padding: 24px 16px 60px; }
+
+/* HERO */
+.hero { text-align: center; padding: 40px 0 28px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-light); color: var(--accent); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; margin-bottom: 16px; letter-spacing: 0.3px; }
+.hero-title { font-size: 34px; font-weight: 900; letter-spacing: -1.2px; line-height: 1.1; margin-bottom: 12px; }
+.hero-title span { color: var(--accent); }
+.hero-sub { font-size: 15px; color: var(--text2); font-weight: 400; line-height: 1.6; max-width: 400px; margin: 0 auto; }
+
+/* STEPS */
+.steps { display: flex; align-items: center; justify-content: center; margin-bottom: 24px; flex-wrap: nowrap; }
+.step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; transition: all 0.3s; background: var(--border); color: var(--text3); flex-shrink: 0; }
+.step-dot.active { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(91,76,245,0.35); }
+.step-dot.done { background: var(--green); color: #fff; }
+.step-line { width: 28px; height: 2px; background: var(--border); transition: background 0.3s; flex-shrink: 0; }
+.step-line.done { background: var(--green); }
+
+/* CARD */
+.card { background: var(--white); border-radius: 24px; padding: 22px; margin-bottom: 14px; box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 4px 20px rgba(0,0,0,0.06); }
+.card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.card-icon { width: 42px; height: 42px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+.card-icon.purple { background: var(--accent-light); }
+.card-icon.green { background: var(--green-light); }
+.card-icon.orange { background: var(--orange-light); }
+.card-icon.yellow { background: var(--yellow-light); }
+.card-icon.red { background: var(--red-light); }
+.card-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+.card-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+/* FORM */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+.form-input, .form-select, .form-textarea { width: 100%; background: var(--bg); border: 1.5px solid transparent; border-radius: 13px; padding: 12px 14px; font-size: 15px; font-family: 'Inter', sans-serif; font-weight: 500; color: var(--text); outline: none; transition: border-color 0.2s, background 0.2s; appearance: none; -webkit-appearance: none; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); background: var(--white); box-shadow: 0 0 0 4px rgba(91,76,245,0.08); }
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text3); font-weight: 400; }
+.form-textarea { resize: none; height: 90px; line-height: 1.5; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* CHIPS */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip { padding: 8px 14px; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--text2); transition: all 0.18s; user-select: none; }
+.chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.chip.selected { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 3px 10px rgba(91,76,245,0.3); }
+
+/* BUTTONS */
+.btn-primary { width: 100%; padding: 15px; background: var(--accent); color: #fff; border: none; border-radius: 15px; font-size: 16px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.18s; letter-spacing: -0.2px; box-shadow: 0 4px 16px rgba(91,76,245,0.3); }
+.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+.btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+.btn-ghost { width: 100%; padding: 13px; background: transparent; color: var(--text2); border: 1.5px solid var(--border); border-radius: 15px; font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.18s; margin-top: 10px; }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* SCREENS */
+.screen { display: none; animation: fadeUp 0.28s cubic-bezier(0.4,0,0.2,1); }
+.screen.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+/* SECTION DIVIDER */
+.section-divider { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin: 20px 0 10px; padding-left: 4px; }
+
+/* RESULTS HERO */
+.result-hero { text-align: center; padding: 28px 20px 22px; background: linear-gradient(135deg, #5B4CF5 0%, #8B7FF8 100%); border-radius: 24px; margin-bottom: 14px; color: #fff; position: relative; overflow: hidden; }
+.result-hero::before { content: ''; position: absolute; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.07); top: -60px; right: -60px; }
+.result-hero::after { content: ''; position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,0.05); bottom: -30px; left: -30px; }
+.result-badge { display: inline-block; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 20px; margin-bottom: 10px; letter-spacing: 0.5px; position: relative; z-index: 1; }
+.result-app-name { font-size: 26px; font-weight: 900; letter-spacing: -0.8px; margin-bottom: 5px; position: relative; z-index: 1; }
+.result-sub { font-size: 13px; opacity: 0.8; position: relative; z-index: 1; }
+
+/* METRIC GRID */
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.metric-card { background: var(--white); border-radius: 18px; padding: 15px; box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.05); text-align: center; }
+.metric-icon { font-size: 22px; margin-bottom: 5px; }
+.metric-value { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 2px; }
+.metric-label { font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; }
+.metric-card.purple .metric-value { color: var(--accent); }
+.metric-card.green .metric-value { color: var(--green); }
+.metric-card.orange .metric-value { color: var(--orange); }
+.metric-card.red .metric-value { color: var(--red); }
+.metric-card.yellow .metric-value { color: #E6A817; }
+
+/* SCORE BAR */
+.score-bar-wrap { display: flex; gap: 5px; margin-top: 10px; }
+.score-seg { height: 7px; flex: 1; border-radius: 4px; background: var(--border); transition: background 0.35s; }
+
+/* INSIGHT ROW */
+.insight-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; background: var(--bg); border-radius: 13px; margin-bottom: 8px; }
+.insight-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.insight-body { flex: 1; }
+.insight-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.insight-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+/* FEATURE ITEM */
+.feature-item { display: flex; align-items: flex-start; gap: 11px; padding: 13px 14px; background: var(--bg); border-radius: 13px; margin-bottom: 8px; animation: fadeUp 0.3s ease both; }
+.feature-num { width: 22px; height: 22px; border-radius: 7px; background: var(--accent-light); color: var(--accent); font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.feature-body { flex: 1; }
+.feature-name { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.feature-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+/* STACK CHIPS */
+.stack-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+.stack-chip { padding: 6px 12px; border-radius: 9px; font-size: 12px; font-weight: 700; }
+.stack-chip.nocode { background: var(--accent-light); color: var(--accent); }
+.stack-chip.tech { background: var(--green-light); color: var(--green); }
+.stack-chip.tool { background: var(--orange-light); color: var(--orange); }
+
+/* READINESS METER */
+.readiness-wrap { margin-top: 8px; }
+.readiness-bar { height: 8px; border-radius: 4px; background: var(--border); overflow: hidden; margin-top: 6px; }
+.readiness-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+/* CTA */
+.cta-card { background: var(--text); border-radius: 24px; padding: 26px 22px; text-align: center; margin-bottom: 14px; position: relative; overflow: hidden; }
+.cta-card::before { content: '🚀'; position: absolute; font-size: 80px; top: -10px; right: -10px; opacity: 0.07; }
+.cta-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 7px; letter-spacing: -0.4px; }
+.cta-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 18px; line-height: 1.5; }
+.btn-cta { width: 100%; padding: 15px; background: var(--accent); color: #fff; border: none; border-radius: 13px; font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.18s; box-shadow: 0 4px 16px rgba(91,76,245,0.4); }
+.btn-cta:hover { background: var(--accent2); }
+.built-by { text-align: center; font-size: 12px; color: var(--text3); margin-top: 18px; font-weight: 500; }
+.built-by span { color: var(--accent); font-weight: 700; }
+
+/* TRUST NOTE */
+.trust-note { background: var(--accent-light); border-radius: 12px; padding: 11px 14px; margin-bottom: 14px; font-size: 12px; color: var(--accent); font-weight: 600; line-height: 1.6; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(10,10,15,0.92); backdrop-filter: blur(12px); color: #fff; padding: 9px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 999; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">✦ Free Tool by Joash</div>
+    <div class="hero-title">Your <span>MVP Scope</span><br/>in 60 seconds</div>
+    <div class="hero-sub">Answer a few questions and get a real world scope, timeline, cost estimate, and recommended stack for your idea.</div>
+  </div>
+
+  <!-- STEP INDICATOR: 5 steps -->
+  <div class="steps">
+    <div class="step-dot active" id="dot-1">1</div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-dot" id="dot-2">2</div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-dot" id="dot-3">3</div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-dot" id="dot-4">4</div>
+    <div class="step-line" id="line-4"></div>
+    <div class="step-dot" id="dot-5">5</div>
+  </div>
+
+  <!-- STEP 1: IDEA -->
+  <div class="screen active" id="step1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">💡</div>
+        <div><div class="card-title">Your Idea</div><div class="card-sub">Tell us what you want to build</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">App Name</label>
+        <input class="form-input" id="appName" placeholder="e.g. FitTrack, LaundryPal" type="text"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">What does it do?</label>
+        <textarea class="form-textarea" id="appDesc" placeholder="Describe the problem your app solves and who it's for..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">App Category</label>
+        <div class="chip-grid" id="categoryChips">
+          <div class="chip" onclick="selectChip(this,'category')">📱 Mobile App</div>
+          <div class="chip" onclick="selectChip(this,'category')">🌐 Web App</div>
+          <div class="chip" onclick="selectChip(this,'category')">🛍️ Marketplace</div>
+          <div class="chip" onclick="selectChip(this,'category')">💼 SaaS Tool</div>
+          <div class="chip" onclick="selectChip(this,'category')">🏋️ Health & Fitness</div>
+          <div class="chip" onclick="selectChip(this,'category')">💰 Finance</div>
+          <div class="chip" onclick="selectChip(this,'category')">🎓 Education</div>
+          <div class="chip" onclick="selectChip(this,'category')">🤝 Social</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goStep2()">Continue →</button>
+  </div>
+
+  <!-- STEP 2: MARKET FACTORS -->
+  <div class="screen" id="step2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon orange">📊</div>
+        <div><div class="card-title">Market Context</div><div class="card-sub">Helps us assess real world complexity</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">How competitive is your market?</label>
+        <div class="chip-grid" id="competitorChips">
+          <div class="chip" onclick="selectChip(this,'competitors')">🟢 No direct competitors</div>
+          <div class="chip" onclick="selectChip(this,'competitors')">🟡 A few competitors</div>
+          <div class="chip" onclick="selectChip(this,'competitors')">🔴 Very competitive market</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Target market size</label>
+        <div class="chip-grid" id="marketSizeChips">
+          <div class="chip" onclick="selectChip(this,'marketSize')">🎯 Niche (small audience)</div>
+          <div class="chip" onclick="selectChip(this,'marketSize')">📈 Growing market</div>
+          <div class="chip" onclick="selectChip(this,'marketSize')">🌍 Mass market</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">How tech savvy are your users?</label>
+        <div class="chip-grid" id="techLiteracyChips">
+          <div class="chip" onclick="selectChip(this,'techLiteracy')">🧓 Not tech savvy</div>
+          <div class="chip" onclick="selectChip(this,'techLiteracy')">👤 Average user</div>
+          <div class="chip" onclick="selectChip(this,'techLiteracy')">👩‍💻 Tech savvy</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Does your app face regulatory requirements?</label>
+        <div class="chip-grid" id="regulatoryChips">
+          <div class="chip" onclick="selectChip(this,'regulatory')">✅ No regulations</div>
+          <div class="chip" onclick="selectChip(this,'regulatory')">⚠️ Some compliance needed</div>
+          <div class="chip" onclick="selectChip(this,'regulatory')">🏛️ Heavy regulation (finance, health, legal)</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goStep3()">Continue →</button>
+    <button class="btn-ghost" onclick="goBack(1)">← Back</button>
+  </div>
+
+  <!-- STEP 3: PROJECT FACTORS -->
+  <div class="screen" id="step3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon green">⚙️</div>
+        <div><div class="card-title">Project Details</div><div class="card-sub">Your team, budget, and priorities</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Budget range</label>
+        <div class="chip-grid" id="budgetChips">
+          <div class="chip" onclick="selectChip(this,'budget')">💸 Bootstrap (under $500)</div>
+          <div class="chip" onclick="selectChip(this,'budget')">💰 Lean ($500 to $2k)</div>
+          <div class="chip" onclick="selectChip(this,'budget')">🚀 Funded ($2k to $10k)</div>
+          <div class="chip" onclick="selectChip(this,'budget')">🏦 Well funded ($10k+)</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">How do you plan to make money?</label>
+        <div class="chip-grid" id="monetizationChips">
+          <div class="chip" onclick="selectChip(this,'monetization')">🆓 Free (grow first)</div>
+          <div class="chip" onclick="selectChip(this,'monetization')">📦 One time payment</div>
+          <div class="chip" onclick="selectChip(this,'monetization')">🔄 Subscription</div>
+          <div class="chip" onclick="selectChip(this,'monetization')">💱 Transaction fee</div>
+          <div class="chip" onclick="selectChip(this,'monetization')">📣 Ads</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Desired launch timeline</label>
+        <div class="chip-grid" id="timelineChips">
+          <div class="chip" onclick="selectChip(this,'timeline')">⚡ ASAP (1 to 2 weeks)</div>
+          <div class="chip" onclick="selectChip(this,'timeline')">🏃 Fast (2 to 4 weeks)</div>
+          <div class="chip" onclick="selectChip(this,'timeline')">🚶 Normal (1 to 2 months)</div>
+          <div class="chip" onclick="selectChip(this,'timeline')">🎯 No rush (3+ months)</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goStep4()">Continue →</button>
+    <button class="btn-ghost" onclick="goBack(2)">← Back</button>
+  </div>
+
+  <!-- STEP 4: FEATURES & INTEGRATIONS -->
+  <div class="screen" id="step4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon yellow">🛠️</div>
+        <div><div class="card-title">Features & Integrations</div><div class="card-sub">What does your MVP need?</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Target audience</label>
+        <div class="chip-grid" id="audienceChips">
+          <div class="chip" onclick="selectChip(this,'audience')">👤 Individuals</div>
+          <div class="chip" onclick="selectChip(this,'audience')">🏢 Businesses (B2B)</div>
+          <div class="chip" onclick="selectChip(this,'audience')">🎓 Students</div>
+          <div class="chip" onclick="selectChip(this,'audience')">💪 Athletes</div>
+          <div class="chip" onclick="selectChip(this,'audience')">👩‍💼 Professionals</div>
+          <div class="chip" onclick="selectChip(this,'audience')">🌍 Everyone</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Key features needed (select all that apply)</label>
+        <div class="chip-grid" id="priorityChips">
+          <div class="chip multi" onclick="toggleChip(this)">🔐 User Auth</div>
+          <div class="chip multi" onclick="toggleChip(this)">💳 Payments</div>
+          <div class="chip multi" onclick="toggleChip(this)">📊 Dashboard</div>
+          <div class="chip multi" onclick="toggleChip(this)">🔔 Notifications</div>
+          <div class="chip multi" onclick="toggleChip(this)">📱 Mobile First</div>
+          <div class="chip multi" onclick="toggleChip(this)">🤖 AI Features</div>
+          <div class="chip multi" onclick="toggleChip(this)">📍 Location</div>
+          <div class="chip multi" onclick="toggleChip(this)">💅 Premium UI/UX</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Third party integrations needed (select all that apply)</label>
+        <div class="chip-grid" id="integrationChips">
+          <div class="chip multi" onclick="toggleChip(this)">💳 Stripe / Paystack</div>
+          <div class="chip multi" onclick="toggleChip(this)">📧 Email (Mailchimp / SendGrid)</div>
+          <div class="chip multi" onclick="toggleChip(this)">🗺️ Google Maps</div>
+          <div class="chip multi" onclick="toggleChip(this)">🔑 Google / Social Login</div>
+          <div class="chip multi" onclick="toggleChip(this)">📱 SMS / WhatsApp</div>
+          <div class="chip multi" onclick="toggleChip(this)">📊 Analytics</div>
+          <div class="chip multi" onclick="toggleChip(this)">☁️ Cloud Storage</div>
+          <div class="chip multi" onclick="toggleChip(this)">🤖 OpenAI / AI API</div>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="goStep5()">Unlock My MVP Scope →</button>
+    <button class="btn-ghost" onclick="goBack(3)">← Back</button>
+  </div>
+
+  <!-- STEP 5: EMAIL CAPTURE -->
+  <div class="screen" id="step5">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon purple">🔓</div>
+        <div><div class="card-title">Unlock Your Results</div><div class="card-sub">Your MVP scope is ready. Enter your details to view it.</div></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" id="leadName" placeholder="e.g. John Doe" type="text"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" id="leadEmail" placeholder="you@example.com" type="email"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" id="leadPhone" placeholder="+234 800 000 0000" type="tel"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Company / Startup Name</label>
+        <input class="form-input" id="leadCompany" placeholder="e.g. Acme Inc (or leave blank)" type="text"/>
+      </div>
+      <div class="trust-note">🔒 Your info is safe. Joash will only use it to follow up on your MVP scope — no spam, ever.</div>
+      <button class="btn-primary" onclick="submitLead()">Show Me My MVP Scope →</button>
+    </div>
+    <button class="btn-ghost" onclick="goBack(4)">← Back</button>
+  </div>
+
+  <!-- STEP 6: RESULTS -->
+  <div class="screen" id="step6">
+
+    <div class="result-hero">
+      <div class="result-badge" id="complexityBadge">Medium Complexity</div>
+      <div class="result-app-name" id="resultAppName">Your App</div>
+      <div class="result-sub" id="resultSub">Web App · Professionals</div>
+    </div>
+
+    <!-- CORE METRICS -->
+    <div class="metric-grid">
+      <div class="metric-card purple">
+        <div class="metric-icon">📋</div>
+        <div class="metric-value" id="featureCount">6</div>
+        <div class="metric-label">Core Features</div>
+      </div>
+      <div class="metric-card green">
+        <div class="metric-icon">⏱️</div>
+        <div class="metric-value" id="timelineResult">3wks</div>
+        <div class="metric-label">Est. Timeline</div>
+      </div>
+      <div class="metric-card orange">
+        <div class="metric-icon">💰</div>
+        <div class="metric-value" id="costResult">$1.5k</div>
+        <div class="metric-label">Est. Cost</div>
+      </div>
+      <div class="metric-card red">
+        <div class="metric-icon">⚠️</div>
+        <div class="metric-value" id="riskResult">Med</div>
+        <div class="metric-label">Risk Level</div>
+      </div>
+    </div>
+
+    <!-- COMPLEXITY SCORE -->
+    <div class="card" style="padding:16px 20px;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px;font-weight:700">Complexity Score</span>
+        <span style="font-size:14px;font-weight:800;color:var(--accent)" id="complexityScore">6/10</span>
+      </div>
+      <div class="score-bar-wrap" id="complexityBar">
+        <div class="score-seg"></div><div class="score-seg"></div><div class="score-seg"></div>
+        <div class="score-seg"></div><div class="score-seg"></div><div class="score-seg"></div>
+        <div class="score-seg"></div><div class="score-seg"></div><div class="score-seg"></div>
+        <div class="score-seg"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px">
+        <span style="font-size:10px;color:var(--text3);font-weight:600">SIMPLE</span>
+        <span style="font-size:10px;color:var(--text3);font-weight:600">COMPLEX</span>
+      </div>
+    </div>
+
+    <!-- MARKET INSIGHTS -->
+    <div class="section-divider">Market Insights</div>
+    <div id="marketInsights"></div>
+
+    <!-- RECOMMENDED STACK -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom:14px">
+        <div class="card-icon purple">⚡</div>
+        <div><div class="card-title">Recommended Stack</div><div class="card-sub">Best tools for your specific situation</div></div>
+      </div>
+      <div id="stackSection"></div>
+    </div>
+
+    <!-- MONETIZATION READINESS -->
+    <div class="card">
+      <div class="card-header" style="margin-bottom:14px">
+        <div class="card-icon green">💸</div>
+        <div><div class="card-title">Monetization Readiness</div><div class="card-sub">How ready is your model to generate revenue</div></div>
+      </div>
+      <div id="monetizationSection"></div>
+    </div>
+
+    <!-- MVP FEATURES -->
+    <div class="section-divider">Recommended MVP Features</div>
+    <div class="card">
+      <div id="featureList"></div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="section-divider">Phase 2 Features</div>
+    <div class="card">
+      <div id="phase2List"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-card">
+      <div class="cta-title">Ready to build this?</div>
+      <div class="cta-sub">I build investor ready MVPs in 2 to 3 weeks. Let's turn your idea into a real product.</div>
+      <button class="btn-cta" onclick="bookCall()">Book a Free Strategy Call 🚀</button>
+    </div>
+
+    <button class="btn-ghost" style="background:var(--white);border-color:var(--border)" onclick="startOver()">← Calculate Another MVP</button>
+    <div class="built-by">Built by <span>Joash</span> · No Code MVP Builder</div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const sel = {
+  category:'', competitors:'', marketSize:'', techLiteracy:'',
+  regulatory:'', budget:'', monetization:'',
+  timeline:'', audience:'', priorities:[], integrations:[]
+};
+
+function selectChip(el, group) {
+  const container = el.parentElement;
+  container.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel[group] = el.textContent.trim();
+}
+
+function toggleChip(el) {
+  el.classList.toggle('selected');
+  const txt = el.textContent.trim();
+  // determine which array
+  const isIntegration = el.closest('#integrationChips');
+  const arr = isIntegration ? sel.integrations : sel.priorities;
+  if (el.classList.contains('selected')) { if (!arr.includes(txt)) arr.push(txt); }
+  else { const idx = arr.indexOf(txt); if (idx > -1) arr.splice(idx, 1); }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function setStep(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.getElementById('dot-'+i);
+    dot.classList.remove('active','done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+  for (let i = 1; i <= 4; i++) {
+    const line = document.getElementById('line-'+i);
+    if (line) line.classList.toggle('done', i < n);
+  }
+}
+
+function goBack(n) { setStep(n); }
+
+function goStep2() {
+  if (!document.getElementById('appName').value.trim()) { showToast('Give your app a name!'); return; }
+  if (!document.getElementById('appDesc').value.trim()) { showToast('Describe your idea briefly'); return; }
+  if (!sel.category) { showToast('Pick a category'); return; }
+  setStep(2);
+}
+
+function goStep3() {
+  if (!sel.competitors) { showToast('Select your competition level'); return; }
+  if (!sel.marketSize) { showToast('Select your target market size'); return; }
+  if (!sel.techLiteracy) { showToast('Select user tech literacy'); return; }
+  if (!sel.regulatory) { showToast('Select regulatory complexity'); return; }
+  setStep(3);
+}
+
+function goStep4() {
+  if (!sel.budget) { showToast('Select your budget range'); return; }
+  if (!sel.monetization) { showToast('Select a monetization model'); return; }
+  if (!sel.timeline) { showToast('Pick a timeline'); return; }
+  setStep(4);
+}
+
+function goStep5() {
+  if (!sel.audience) { showToast('Select your target audience'); return; }
+  setStep(5);
+}
+
+async function submitLead() {
+  const name = document.getElementById('leadName').value.trim();
+  const email = document.getElementById('leadEmail').value.trim();
+  const phone = document.getElementById('leadPhone').value.trim();
+  const company = document.getElementById('leadCompany').value.trim();
+  if (!name) { showToast('Enter your full name'); return; }
+  if (!email || !email.includes('@')) { showToast('Enter a valid email'); return; }
+  if (!phone) { showToast('Enter your phone number'); return; }
+
+  const appName = document.getElementById('appName').value.trim();
+  const appDesc = document.getElementById('appDesc').value.trim();
+  const summary = `App: ${appName} | Category: ${sel.category} | Competitors: ${sel.competitors} | Market: ${sel.marketSize} | Tech Literacy: ${sel.techLiteracy} | Regulatory: ${sel.regulatory} | Budget: ${sel.budget} | Monetization: ${sel.monetization} | Timeline: ${sel.timeline} | Audience: ${sel.audience} | Features: ${sel.priorities.join(', ')} | Integrations: ${sel.integrations.join(', ')} | Description: ${appDesc}`;
+
+  try {
+    await fetch('https://formspree.io/f/xpqyalnk', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, company: company || 'Not provided', summary })
+    });
+  } catch(e) {}
+
+  showToast('🎉 Unlocking your results...');
+  setTimeout(() => { generateResults(); setStep(6); }, 800);
+}
+
+function generateResults() {
+  const appName = document.getElementById('appName').value.trim();
+  const cat = sel.category.replace(/[^\w\s&]/g,'').trim();
+  const catLow = cat.toLowerCase();
+
+  // ── SCORING ENGINE ──
+  let score = 2;
+
+  // FEATURE complexity
+  if (sel.priorities.includes('💳 Payments')) score += 2;
+  if (sel.priorities.includes('🤖 AI Features')) score += 2;
+  if (sel.priorities.includes('📍 Location')) score += 1;
+  if (sel.priorities.includes('🔐 User Auth')) score += 1;
+  if (sel.priorities.includes('🔔 Notifications')) score += 1;
+  if (sel.priorities.length >= 5) score += 1;
+
+  // INTEGRATION complexity
+  score += Math.min(sel.integrations.length, 3);
+  if (sel.integrations.includes('🤖 OpenAI / AI API')) score += 1;
+  if (sel.integrations.includes('💳 Stripe / Paystack')) score += 1;
+
+  // MARKET factors
+  if (sel.regulatory.includes('Heavy')) score += 2;
+  else if (sel.regulatory.includes('Some')) score += 1;
+  if (sel.competitors.includes('Very competitive')) score += 1;
+  if (sel.marketSize.includes('Mass')) score += 1;
+  if (sel.techLiteracy.includes('Not tech')) score += 1; // harder UX bar
+
+  // TEAM factor removed
+
+  score = Math.min(score, 10);
+
+  const complexity = score <= 3 ? 'Simple' : score <= 6 ? 'Medium' : score <= 8 ? 'Advanced' : 'Enterprise';
+  const complexityColor = score <= 3 ? '#00C896' : score <= 6 ? '#FF8C42' : score <= 8 ? '#FF4757' : '#AF52DE';
+
+  // ── TIMELINE ──
+  let baseWeeks = score <= 3 ? 1 : score <= 5 ? 2 : score <= 7 ? 4 : 8;
+  if (sel.timeline.includes('ASAP') && baseWeeks > 2) baseWeeks = Math.max(baseWeeks - 1, 2);
+
+  const timelineStr = baseWeeks <= 2 ? `${baseWeeks}wks` : baseWeeks <= 8 ? `${baseWeeks}wks` : `${Math.round(baseWeeks/4)}mo`;
+
+  // ── COST ESTIMATE (USD, no-code builder rates) ──
+  let baseCost = 0;
+  if (sel.budget.includes('Bootstrap')) baseCost = score <= 3 ? 200 : score <= 6 ? 500 : 800;
+  else if (sel.budget.includes('Lean')) baseCost = score <= 3 ? 500 : score <= 6 ? 1500 : 2500;
+  else if (sel.budget.includes('Funded')) baseCost = score <= 3 ? 1500 : score <= 6 ? 4000 : 7000;
+  else baseCost = score <= 3 ? 3000 : score <= 6 ? 8000 : 15000;
+
+  // Adjust for integrations and regulatory
+  baseCost += sel.integrations.length * 150;
+  if (sel.regulatory.includes('Heavy')) baseCost *= 1.4;
+  if (sel.regulatory.includes('Some')) baseCost *= 1.15;
+  const costStr = baseCost >= 1000 ? '$' + (baseCost/1000).toFixed(1) + 'k' : '$' + baseCost;
+
+  // ── RISK ──
+  let risk = 'Low';
+  if (sel.competitors.includes('Very competitive') && sel.marketSize.includes('Mass')) risk = 'High';
+  else if (sel.regulatory.includes('Heavy') || score >= 8) risk = 'High';
+  else if (score >= 5 || sel.competitors.includes('A few')) risk = 'Medium';
+
+  // ── RECOMMENDED STACK ──
+  let noCodeTools = [], techStack = [], extraTools = [];
+  if (score <= 5) {
+    noCodeTools = ['Bubble.io', 'Webflow'];
+    if (catLow.includes('mobile')) noCodeTools = ['Bubble.io', 'FlutterFlow'];
+    if (catLow.includes('marketplace')) noCodeTools = ['Bubble.io', 'Sharetribe'];
+  } else if (score <= 7) {
+    noCodeTools = ['Bubble.io'];
+    techStack = ['Next.js', 'Supabase'];
+  } else {
+    techStack = ['Next.js', 'Node.js', 'PostgreSQL'];
+    noCodeTools = ['Bubble.io (MVP only)'];
+  }
+  if (sel.integrations.includes('💳 Stripe / Paystack')) extraTools.push('Paystack');
+  if (sel.integrations.includes('🤖 OpenAI / AI API')) extraTools.push('OpenAI API');
+  if (sel.integrations.includes('📧 Email (Mailchimp / SendGrid)')) extraTools.push('SendGrid');
+  if (sel.integrations.includes('🗺️ Google Maps')) extraTools.push('Google Maps API');
+
+  // ── MONETIZATION READINESS ──
+  let monoScore = 0, monoInsight = '', monoTips = [];
+  const mono = sel.monetization;
+  if (mono.includes('Free')) {
+    monoScore = 40;
+    monoInsight = 'Growth first strategy. Revenue comes after traction.';
+    monoTips = ['Focus on user acquisition', 'Plan freemium upgrade path', 'Consider ads or premium tier later'];
+  } else if (mono.includes('One time')) {
+    monoScore = 65;
+    monoInsight = 'Simple but limited. Good for tools and utilities.';
+    monoTips = ['Price anchoring is key', 'Offer a free trial', 'Add upgrade upsells over time'];
+  } else if (mono.includes('Subscription')) {
+    monoScore = 85;
+    monoInsight = 'Strongest model for recurring revenue and valuation.';
+    monoTips = ['Monthly vs annual pricing matters', 'Build habit forming features', 'Track churn aggressively'];
+  } else if (mono.includes('Transaction')) {
+    monoScore = 75;
+    monoInsight = 'Scales with volume. Perfect for marketplaces.';
+    monoTips = ['Keep fees competitive', 'Gross Merchandise Value (GMV) is your north star', 'Trust and safety are critical'];
+  } else if (mono.includes('Ads')) {
+    monoScore = 30;
+    monoInsight = 'Requires massive scale to be meaningful. High risk for MVPs.';
+    monoTips = ['Need 10k+ MAU before ads matter', 'Consider hybrid model', 'User experience often suffers'];
+  }
+
+  // ── MARKET INSIGHTS ──
+  const insights = [];
+  if (sel.competitors.includes('Very competitive')) {
+    insights.push({ icon: '🔴', title: 'Crowded Market', desc: 'Differentiation is critical. Your MVP must have a clear unique angle to stand out and acquire early users.' });
+  } else if (sel.competitors.includes('No direct')) {
+    insights.push({ icon: '🟢', title: 'Blue Ocean Opportunity', desc: 'Low competition is good but validate demand carefully. Make sure the market exists before investing heavily.' });
+  } else {
+    insights.push({ icon: '🟡', title: 'Competitive but Winnable', desc: 'You have competitors but the market is not saturated. Focus on a specific niche or underserved segment.' });
+  }
+
+  if (sel.regulatory.includes('Heavy')) {
+    insights.push({ icon: '⚠️', title: 'Regulatory Risk', desc: 'Finance, health, and legal apps carry compliance overhead. Budget for legal review and plan extra build time.' });
+  }
+
+  if (sel.techLiteracy.includes('Not tech')) {
+    insights.push({ icon: '🎨', title: 'UX is Your Moat', desc: 'Your users are not tech savvy so exceptional simplicity and onboarding will be your biggest competitive advantage.' });
+  }
+
+  if (sel.marketSize.includes('Mass')) {
+    insights.push({ icon: '📈', title: 'Scale Requires Infrastructure', desc: 'A mass market app needs solid architecture from day one. Cheap shortcuts now will cost significantly more to fix at scale.' });
+  }
+
+  // ── MVP FEATURES ──
+  const coreFeatures = [];
+  const phase2Features = [];
+
+  if (catLow.includes('marketplace')) {
+    coreFeatures.push({ name: 'Listings & Search', desc: 'Browse and filter products or services with a clean search experience.' });
+    coreFeatures.push({ name: 'Seller Profiles', desc: 'Verified profiles with trust signals and ratings.' });
+    coreFeatures.push({ name: 'In App Messaging', desc: 'Direct chat between buyers and sellers.' });
+    phase2Features.push({ name: 'Review System', desc: 'Ratings and reviews to build platform trust.' });
+    phase2Features.push({ name: 'Dispute Resolution', desc: 'Admin tools to handle buyer or seller disputes.' });
+  } else if (catLow.includes('saas') || catLow.includes('tool')) {
+    coreFeatures.push({ name: 'Core Workflow', desc: 'The primary action your tool is built around, done exceptionally well.' });
+    coreFeatures.push({ name: 'Dashboard', desc: 'Central hub showing key metrics and activity at a glance.' });
+    coreFeatures.push({ name: 'Data Export', desc: 'Let users export their data as CSV or PDF.' });
+    phase2Features.push({ name: 'Team Collaboration', desc: 'Invite teammates and manage access permissions.' });
+    phase2Features.push({ name: 'Integrations', desc: 'Connect with tools like Slack, Google, or Zapier.' });
+  } else if (catLow.includes('health') || catLow.includes('fitness')) {
+    coreFeatures.push({ name: 'Activity Tracker', desc: 'Log workouts, meals, or health metrics with ease.' });
+    coreFeatures.push({ name: 'Progress Dashboard', desc: 'Visual charts showing trends and streaks over time.' });
+    coreFeatures.push({ name: 'Goal Setting', desc: 'Set personal targets and track completion.' });
+    phase2Features.push({ name: 'Social Feed', desc: 'Share progress with friends or a community.' });
+    phase2Features.push({ name: 'Coach Connect', desc: 'Book sessions or get feedback from a trainer.' });
+  } else if (catLow.includes('finance')) {
+    coreFeatures.push({ name: 'Transaction Log', desc: 'Add and categorize income and expenses easily.' });
+    coreFeatures.push({ name: 'Budget Overview', desc: 'Visual summary of spending vs income by category.' });
+    coreFeatures.push({ name: 'Savings Goals', desc: 'Set saving targets and track progress toward them.' });
+    phase2Features.push({ name: 'Bank Sync', desc: 'Automatically import transactions from connected accounts.' });
+    phase2Features.push({ name: 'Spend Insights', desc: 'AI powered analysis of spending patterns.' });
+  } else if (catLow.includes('education')) {
+    coreFeatures.push({ name: 'Content Library', desc: 'Organized lessons, modules, or resources to learn from.' });
+    coreFeatures.push({ name: 'Progress Tracking', desc: 'Show completion rates and learning streaks.' });
+    coreFeatures.push({ name: 'Assessments', desc: 'Test knowledge with simple interactive quizzes.' });
+    phase2Features.push({ name: 'Certificates', desc: 'Issue completion certificates to motivate learners.' });
+    phase2Features.push({ name: 'Live Classes', desc: 'Schedule and host live video sessions.' });
+  } else if (catLow.includes('social')) {
+    coreFeatures.push({ name: 'User Profiles', desc: 'Customizable public or private profiles.' });
+    coreFeatures.push({ name: 'Feed & Posts', desc: 'Create and share content with followers.' });
+    coreFeatures.push({ name: 'Follow & Connect', desc: 'Build a network by following other users.' });
+    phase2Features.push({ name: 'Groups & Communities', desc: 'Create or join niche interest groups.' });
+    phase2Features.push({ name: 'Stories', desc: 'Short lived ephemeral content.' });
+  } else {
+    coreFeatures.push({ name: 'Home Dashboard', desc: 'A clean landing screen showing the most important info at a glance.' });
+    coreFeatures.push({ name: 'Core Action Flow', desc: 'The primary feature your users come to the app for.' });
+    coreFeatures.push({ name: 'User Profile', desc: 'Basic profile with editable settings and preferences.' });
+    phase2Features.push({ name: 'Search & Filter', desc: 'Help users find what they need quickly.' });
+    phase2Features.push({ name: 'Activity History', desc: 'Log of past actions or usage.' });
+  }
+
+  // Feature additions from selections
+  if (sel.priorities.includes('🔐 User Auth')) coreFeatures.unshift({ name: 'User Authentication', desc: 'Sign up, log in, and password reset. Social login via Google recommended.' });
+  if (sel.priorities.includes('💳 Payments')) coreFeatures.push({ name: 'Payment Integration', desc: 'Accept payments via Paystack or Stripe with a smooth and secure checkout.' });
+  if (sel.priorities.includes('🔔 Notifications')) coreFeatures.push({ name: 'Push Notifications', desc: 'Timely alerts to re-engage users and drive key actions.' });
+  if (sel.priorities.includes('🤖 AI Features')) coreFeatures.push({ name: 'AI Powered Feature', desc: 'Smart recommendations, auto generation, or intelligent insights powered by AI.' });
+  if (sel.priorities.includes('📍 Location')) coreFeatures.push({ name: 'Location Services', desc: 'Map integration and location based filtering or proximity matching.' });
+  if (sel.regulatory.includes('Some') || sel.regulatory.includes('Heavy')) coreFeatures.push({ name: 'Compliance Layer', desc: 'Data privacy controls, consent management, and regulatory audit trail.' });
+  phase2Features.push({ name: 'Admin Panel', desc: 'Backend dashboard to manage users, content, and platform data.' });
+  if (sel.marketSize.includes('Mass') || sel.competitors.includes('Very competitive')) phase2Features.push({ name: 'Referral System', desc: 'Built in viral growth mechanism to drive low cost user acquisition.' });
+
+  // ── UPDATE UI ──
+  document.getElementById('resultAppName').textContent = appName;
+  document.getElementById('resultSub').textContent = `${cat} · ${sel.audience.replace(/[^\w\s]/g,'').trim()}`;
+  document.getElementById('complexityBadge').textContent = `${complexity} Complexity`;
+  document.getElementById('featureCount').textContent = coreFeatures.length;
+  document.getElementById('timelineResult').textContent = timelineStr;
+  document.getElementById('costResult').textContent = costStr;
+  document.getElementById('riskResult').textContent = risk;
+  document.getElementById('complexityScore').textContent = `${score}/10`;
+  document.getElementById('complexityScore').style.color = complexityColor;
+
+  // Score bar
+  document.querySelectorAll('#complexityBar .score-seg').forEach((b, i) => {
+    b.style.background = i < score ? complexityColor : 'var(--border)';
+    b.style.transition = `background 0.3s ${i * 0.05}s`;
+  });
+
+  // Market insights
+  document.getElementById('marketInsights').innerHTML = insights.map(ins => `
+    <div class="insight-row">
+      <div class="insight-icon">${ins.icon}</div>
+      <div class="insight-body">
+        <div class="insight-title">${ins.title}</div>
+        <div class="insight-desc">${ins.desc}</div>
+      </div>
+    </div>`).join('');
+
+  // Stack
+  document.getElementById('stackSection').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div class="form-label" style="margin-bottom:8px">No Code Tools</div>
+      <div class="stack-chips">${noCodeTools.map(t=>`<div class="stack-chip nocode">${t}</div>`).join('')}</div>
+    </div>
+    ${techStack.length ? `<div style="margin-bottom:12px"><div class="form-label" style="margin-bottom:8px">Tech Stack (if scaling)</div><div class="stack-chips">${techStack.map(t=>`<div class="stack-chip tech">${t}</div>`).join('')}</div></div>` : ''}
+    ${extraTools.length ? `<div><div class="form-label" style="margin-bottom:8px">Integrations</div><div class="stack-chips">${extraTools.map(t=>`<div class="stack-chip tool">${t}</div>`).join('')}</div></div>` : ''}
+  `;
+
+  // Monetization
+  const monoColor = monoScore >= 70 ? 'var(--green)' : monoScore >= 50 ? 'var(--orange)' : 'var(--red)';
+  document.getElementById('monetizationSection').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:700">${sel.monetization.replace(/[^\w\s/()]/g,'').trim()}</span>
+      <span style="font-size:14px;font-weight:800;color:${monoColor}">${monoScore}%</span>
+    </div>
+    <div class="readiness-bar"><div class="readiness-fill" style="width:${monoScore}%;background:${monoColor}"></div></div>
+    <div style="font-size:12px;color:var(--text2);margin-top:10px;line-height:1.5">${monoInsight}</div>
+    <div style="margin-top:12px">${monoTips.map(t=>`<div style="font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--accent);font-weight:700">→</span>${t}</div>`).join('')}</div>
+  `;
+
+  // Features
+  document.getElementById('featureList').innerHTML = coreFeatures.slice(0,7).map((f,i) => `
+    <div class="feature-item" style="animation-delay:${i*0.05}s">
+      <div class="feature-num">${i+1}</div>
+      <div class="feature-body"><div class="feature-name">${f.name}</div><div class="feature-desc">${f.desc}</div></div>
+    </div>`).join('');
+
+  document.getElementById('phase2List').innerHTML = phase2Features.slice(0,5).map((f,i) => `
+    <div class="feature-item" style="animation-delay:${i*0.05}s">
+      <div class="feature-num" style="background:var(--orange-light);color:var(--orange)">${i+1}</div>
+      <div class="feature-body"><div class="feature-name">${f.name}</div><div class="feature-desc">${f.desc}</div></div>
+    </div>`).join('');
+}
+
+function bookCall() {
+  showToast('Redirecting to booking... 🚀');
+  setTimeout(() => window.open('https://calendly.com/joash01/mvp-deep-dive', '_blank'), 800);
+}
+
+function startOver() {
+  Object.keys(sel).forEach(k => { if (Array.isArray(sel[k])) sel[k] = []; else sel[k] = ''; });
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  ['appName','appDesc','leadName','leadEmail','leadPhone','leadCompany'].forEach(id => document.getElementById(id).value = '');
+  setStep(1);
+}
+</script>
+</body>
+</html>
